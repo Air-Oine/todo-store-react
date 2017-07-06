@@ -2,28 +2,67 @@ import React, { Component,PropTypes } from 'react';
 import { View, Image,Text,ScrollView } from 'react-native';
 import Todo from '../modele/Todo'
 import TodoComponent from './TodoItem'
-export default class TodoList extends Component {
+
+import { connect } from 'react-redux';
+import { changeTab } from './actions/todo.action'
+
+class TodoList extends Component {
     
     constructor(props){
         super(props)
-         this.changeValue = this.changeValue.bind(this);
+
+        this.changeValue = this.changeValue.bind(this);
+        this.createTodoList = this.createTodoList.bind(this);
     }
-    changeValue(Todo){
-        this.props.changeTab(Todo)
+
+    changeValue(todo){
+        this.props.changeTab(todo)
+    }
+
+    createTodoList() {
+        return this.props.todos.map((todo, index) =>{
+            return (
+                <TodoComponent 
+                    key={index} 
+                    todo={todo} 
+                    changeValue={(todo) => this.changeValue(todo)} />
+            );
+        })
     }
     
     render() {
-        
-        const todo = this.props.todoList.map((todo, index) =>{
-            return <TodoComponent key={index} todo={todo}  changeValue={this.changeValue} />
-        })
-        return (
-            <ScrollView>
-                {todo}
-            </ScrollView>
-        );
+        if(this.props.todos.length==0){
+            return (
+                <Text> Vous n'avez aucun TODO ! </Text>
+            );
+        }
+        else {
+            const todoList = this.createTodoList();
+            return (
+                <ScrollView>
+                    <Text> Il y a {this.props.todos.length} élément(s) </Text>
+                    {todoList}
+                </ScrollView>
+            );
+        }
     }
 }
+
+
+function mapStateToProps(state) {
+    return {
+        todos: state.todoReducer.todos
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        changeTab: todo => dispatch(changeTab(todo))
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(TodoList);
+
 TodoList.propType = {
   todoList: PropTypes.arrayOf(PropTypes.Todo).required,
 }
